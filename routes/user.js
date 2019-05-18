@@ -34,6 +34,13 @@ router.post('/register', (req, res) => {
         password,
         password2
       })
+    } else if (password !== password2) {
+      res.render('register', {
+        name,
+        email,
+        password,
+        password2
+      })
     } else {
       const newUser = new User({
         name,
