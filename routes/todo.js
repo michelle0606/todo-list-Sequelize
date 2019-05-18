@@ -83,9 +83,24 @@ router.put('/:id', authenticated, (req, res) => {
   })
 })
 
-// 刪除 Todo
 router.delete('/:id/delete', authenticated, (req, res) => {
-  res.send('刪除 Todo')
+  User.findByPk(req.user.id)
+    .then(user => {
+      if (!user) {
+        return res.error()
+      }
+      Todo.destroy({
+        where: {
+          UserId: req.user.id,
+          Id: req.params.id
+        }
+      }).then(() => {
+        return res.redirect('/')
+      })
+    })
+    .catch(error => {
+      return res.status(422).json(error)
+    })
 })
 
 module.exports = router
