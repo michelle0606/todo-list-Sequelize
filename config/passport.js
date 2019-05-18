@@ -39,23 +39,23 @@ module.exports = passport => {
             var randomPassword = Math.random()
               .toString(36)
               .slice(-8)
-            bcrypt.genSalt(10, (err, salt) =>
-              bcrypt.hash(randomPassword, salt, (err, hash) => {
-                var newUser = new User({
+            bcrypt
+              .genSalt(10)
+              .then(salt => bcrypt.hash(randomPassword, salt))
+              .then(hash => {
+                const newUser = new User({
                   name: profile._json.name,
                   email: profile._json.email,
                   password: hash
                 })
-                newUser
-                  .save()
-                  .then(user => {
-                    return done(null, user)
-                  })
-                  .catch(err => {
-                    console.log(err)
-                  })
+                newUser.save()
               })
-            )
+              .then(user => {
+                return done(null, user)
+              })
+              .catch(err => {
+                console.log(err)
+              })
           } else {
             return done(null, user)
           }

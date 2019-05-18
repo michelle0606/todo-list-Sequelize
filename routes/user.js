@@ -26,41 +26,33 @@ router.get('/register', (req, res) => {
 // 註冊檢查
 router.post('/register', (req, res) => {
   const { name, email, password, password2 } = req.body
-  const users = new Promise((resolve, reject) => {
-    User.findOne({ where: { email: email } }).then(user => {
-      if (user) {
-        console.log('User already exists')
-        res.render('register', {
-          name,
-          email,
-          password,
-          password2
-        })
-      } else {
-        const newUser = new User({
-          name,
-          email,
-          password
-        })
-        resolve(newUser)
-      }
-    })
-  })
+  User.findOne({ where: { email: email } }).then(user => {
+    if (user) {
+      res.render('register', {
+        name,
+        email,
+        password,
+        password2
+      })
+    } else {
+      const newUser = new User({
+        name,
+        email,
+        password
+      })
+      // 密碼雜揍
 
-  users
-    .then(newUser => {
-      bcrypt.genSalt(10, (err, salt) =>
-        bcrypt.hash(newUser.password, salt, (err, hash) => {
-          if (err) throw err
+      bcrypt
+        .genSalt(10)
+        .then(salt => bcrypt.hash(newUser.password, salt))
+        .then(hash => {
           newUser.password = hash
-          return newUser.save()
+          newUser.save()
+          res.redirect('/')
         })
-      )
-    })
-    .then(() => {
-      res.redirect('/')
-    })
-    .catch(error => console.log(error))
+        .catch(err => console.log(err))
+    }
+  })
 })
 
 router.get('/logout', (req, res) => {
