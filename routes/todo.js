@@ -6,14 +6,9 @@ const User = db.User
 
 const { authenticated } = require('../config/auth')
 
-// 列出全部 Todo
-router.get('/', authenticated, (req, res) => {
-  res.send('列出全部 Todo')
-})
-
 // 新增一筆 Todo 頁面
 router.get('/new', authenticated, (req, res) => {
-  res.send('新增 Todo 頁面')
+  res.render('new')
 })
 
 // 顯示一筆 Todo 的詳細內容
@@ -21,9 +16,18 @@ router.get('/:id', authenticated, (req, res) => {
   res.send('顯示一筆 Todo')
 })
 
-// 新增一筆  Todo
 router.post('/', authenticated, (req, res) => {
-  res.send('新增一筆  Todo')
+  Todo.create({
+    name: req.body.name,
+    done: false,
+    userId: req.user.id
+  })
+    .then(todo => {
+      return res.redirect('/')
+    })
+    .catch(err => {
+      return res.status(422).json(err)
+    })
 })
 
 // 修改 Todo 頁面

@@ -6,23 +6,23 @@ const Todo = db.Todo
 const { authenticated } = require('../config/auth')
 
 router.get('/', authenticated, (req, res, err) => {
-  User.sync().then(() => {
-    const user = User.findByPk(req.user.id)
-      .then(user => {
-        if (!user) return res.error()
-        Todo.findAll({
+  User.sync().then(() =>
+    User.findByPk(req.user.id).then(user => {
+      if (!user) return res.error()
+      else
+        return Todo.findAll({
           where: {
             userId: req.user.id
           }
         })
-      })
-      .then(todos => {
-        return res.render('index')
-      })
-      .catch(error => {
-        return res.status(422).json(error)
-      })
-  })
+          .then(todos => {
+            return res.render('index', { todos })
+          })
+          .catch(error => {
+            return res.status(422).json(error)
+          })
+    })
+  )
 })
 
 module.exports = router

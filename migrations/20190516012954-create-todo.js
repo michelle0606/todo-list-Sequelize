@@ -14,6 +14,14 @@ module.exports = {
       done: {
         type: Sequelize.BOOLEAN
       },
+      userId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Users',
+          key: 'id',
+          allowNull: false
+        }
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
