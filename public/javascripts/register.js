@@ -7,7 +7,9 @@ form.addEventListener('submit', event => {
   if (password.value !== password2.value) {
     password2Feedback.innerHTML = "Those password didn't match. Try again."
     password2.classList.add('is-invalid')
-    return
+  } else {
+    form.submit()
+    window.location('/')
   }
 })
 
