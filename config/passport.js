@@ -6,23 +6,21 @@ const User = db.User
 
 module.exports = passport => {
   passport.use(
-    new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
-      User.findOne({ where: { email: email } }).then(user => {
-        if (!user) {
-          return done(null, false)
-        }
+    new LocalStrategy(
+      { usernameField: 'email' },
+      async (email, password, done) => {
+        const user = await User.findOne({ where: { email: email } })
 
-        bcrypt.compare(password, user.password, (err, isMatch) => {
-          if (err) throw err
-          if (isMatch) {
-            return done(null, user)
-          } else {
-            return done(null, false)
-          }
-        })
-      })
-    })
+        if (!user) return done(null, false)
+
+        const isMatch = await bcrypt.compare(password, user.password)
+
+        if (isMatch) return done(null, user)
+        else return done(null, false)
+      }
+    )
   )
+
   passport.use(
     new FacebookStrategy(
       {
@@ -31,35 +29,22 @@ module.exports = passport => {
         callbackURL: process.env.FACEBOOK_CALLBACK,
         profileFields: ['email', 'displayName']
       },
-      (accessToken, refreshToken, profile, done) => {
-        User.findOne({
-          where: { email: profile._json.email }
-        }).then(user => {
-          if (!user) {
-            var randomPassword = Math.random()
-              .toString(36)
-              .slice(-8)
-            bcrypt
-              .genSalt(10)
-              .then(salt => bcrypt.hash(randomPassword, salt))
-              .then(hash => {
-                const newUser = new User({
-                  name: profile._json.name,
-                  email: profile._json.email,
-                  password: hash
-                })
-                newUser.save()
-              })
-              .then(user => {
-                return done(null, user)
-              })
-              .catch(err => {
-                console.log(err)
-              })
-          } else {
-            return done(null, user)
-          }
-        })
+      async (accessToken, refreshToken, profile, done) => {
+        const { email, name } = profile._json
+        const user = await User.findOne({ where: { email } })
+
+        if (user) return done(null, user)
+
+        const randomPassword = await Math.random()
+          .toString(36)
+          .slice(-8)
+
+        const salt = await bcrypt.genSalt(10)
+        const hash = await bcrypt.hash(randomPassword, salt)
+
+        const newUser = new User({ name, email, password: hash })
+        await newUser.save()
+        return done(null, newUser)
       }
     )
   )

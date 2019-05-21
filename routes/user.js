@@ -26,15 +26,8 @@ router.get('/register', (req, res) => {
 // 註冊檢查
 router.post('/register', (req, res) => {
   const { name, email, password, password2 } = req.body
-  User.findOne({ where: { email: email } }).then(user => {
-    if (user) {
-      res.render('register', {
-        name,
-        email,
-        password,
-        password2
-      })
-    } else if (password !== password2) {
+  User.findOne({ where: { email } }).then(user => {
+    if (user || password !== password2) {
       res.render('register', {
         name,
         email,
@@ -47,7 +40,6 @@ router.post('/register', (req, res) => {
         email,
         password
       })
-      // 密碼雜揍
 
       bcrypt
         .genSalt(10)

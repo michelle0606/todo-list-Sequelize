@@ -12,17 +12,17 @@ router.get('/new', authenticated, (req, res) => {
 router.get('/:id', authenticated, (req, res) => {
   User.findByPk(req.user.id)
     .then(user => {
-      if (!user) {
-        return res.error()
-      }
-      Todo.findOne({
+      if (!user) return res.error()
+
+      return Todo.findOne({
         where: {
           UserId: req.user.id,
           Id: req.params.id
         }
-      }).then(todo => {
-        return res.render('detail', { todo })
       })
+    })
+    .then(todo => {
+      return res.render('detail', { todo })
     })
     .catch(error => {
       return res.status(422).json(error)
@@ -35,7 +35,7 @@ router.post('/', authenticated, (req, res) => {
     done: false,
     userId: req.user.id
   })
-    .then(todo => {
+    .then(() => {
       return res.redirect('/')
     })
     .catch(err => {
@@ -44,19 +44,19 @@ router.post('/', authenticated, (req, res) => {
 })
 
 router.get('/:id/edit', authenticated, (req, res) => {
-  User.findByPk(req.user.id).then(user => {
-    if (!user) {
-      return res.error()
-    }
-    Todo.findOne({
-      where: {
-        Id: req.params.id,
-        UserId: req.user.id
-      }
-    }).then(todo => {
+  User.findByPk(req.user.id)
+    .then(user => {
+      if (!user) return res.error()
+      return Todo.findOne({
+        where: {
+          Id: req.params.id,
+          UserId: req.user.id
+        }
+      })
+    })
+    .then(todo => {
       return res.render('edit', { todo })
     })
-  })
 })
 
 router.put('/:id', authenticated, (req, res) => {
@@ -65,38 +65,34 @@ router.put('/:id', authenticated, (req, res) => {
       Id: req.params.id,
       UserId: req.user.id
     }
-  }).then(todo => {
-    todo.name = req.body.name
-    if (req.body.done === 'on') {
-      todo.done = true
-    } else {
-      todo.done = false
-    }
-    todo
-      .save()
-      .then(() => {
-        return res.redirect(`/todos/${req.params.id}`)
-      })
-      .catch(err => {
-        return res.status(422).json(err)
-      })
   })
+    .then(todo => {
+      todo.name = req.body.name
+      if (req.body.done === 'on') todo.done = true
+      else todo.done = false
+      return todo.save()
+    })
+    .then(() => {
+      return res.redirect(`/todos/${req.params.id}`)
+    })
+    .catch(err => {
+      return res.status(422).json(err)
+    })
 })
 
 router.delete('/:id/delete', authenticated, (req, res) => {
   User.findByPk(req.user.id)
     .then(user => {
-      if (!user) {
-        return res.error()
-      }
-      Todo.destroy({
+      if (!user) return res.error()
+      return Todo.destroy({
         where: {
           UserId: req.user.id,
           Id: req.params.id
         }
-      }).then(() => {
-        return res.redirect('/')
       })
+    })
+    .then(() => {
+      return res.redirect('/')
     })
     .catch(error => {
       return res.status(422).json(error)

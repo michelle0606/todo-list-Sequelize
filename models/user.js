@@ -7,7 +7,10 @@ module.exports = (sequelize, DataTypes) => {
       email: DataTypes.STRING,
       password: DataTypes.STRING
     },
-    {}
+    {
+      charset: 'utf8',
+      collate: 'utf8_unicode_ci'
+    }
   )
   User.associate = function(models) {
     User.hasMany(models.Todo, { foreignKey: 'userId' })
