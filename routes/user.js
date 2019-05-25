@@ -27,30 +27,24 @@ router.get('/register', (req, res) => {
 router.post('/register', (req, res) => {
   const { name, email, password, password2 } = req.body
   User.findOne({ where: { email } }).then(user => {
-    if (user || password !== password2) {
-      res.render('register', {
-        name,
-        email,
-        password,
-        password2
-      })
-    } else {
-      const newUser = new User({
-        name,
-        email,
-        password
-      })
-
-      bcrypt
-        .genSalt(10)
-        .then(salt => bcrypt.hash(newUser.password, salt))
-        .then(hash => {
-          newUser.password = hash
-          newUser.save()
-          res.redirect('/')
-        })
-        .catch(err => console.log(err))
+    if (user || password != password2) {
+      return res.render('register', { name, email, password, password2 })
     }
+    const newUser = new User({
+      name,
+      email,
+      password
+    })
+
+    bcrypt
+      .genSalt(10)
+      .then(salt => bcrypt.hash(newUser.password, salt))
+      .then(hash => {
+        newUser.password = hash
+        newUser.save()
+        res.redirect('/')
+      })
+      .catch(error => console.log(error))
   })
 })
 
